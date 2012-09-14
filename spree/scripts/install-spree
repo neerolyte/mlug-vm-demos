@@ -1,0 +1,44 @@
+#!/bin/bash -ex
+
+echo "Configuring apt to use ACNG proxy"
+echo 'Acquire::http { Proxy "http://192.168.34.10:3142/"; };' > /etc/apt/apt.conf.d/01proxy.conf 
+
+echo "Installing spree dependencies (from apt)"
+pkgs=(ruby{,gems} lib{xml2,xslt1,sqlite3}-dev imagemagick git nodejs)
+missing=()
+for pkg in "${pkgs[@]}"; do
+	dpkg -l "$pkg" > /dev/null || missing+=("$pkg")
+done
+if [[ ${#missing[@]} -gt 0 ]]; then
+	apt-get update
+	apt-get install -y "${missing[@]}"
+fi
+
+echo "Configuring gem to use proxy for this session..."
+export http_proxy=http://192.168.34.10:3142/
+
+echo "Installing spree dependencies (from gem)"
+pkgs=(rails spree{,_auth} sqlite3 {sass,coffee}-rails uglifier)
+missing=()
+for pkg in "${pkgs[@]}"; do
+	gem list | grep "^$pkg " -q || missing+=("$pkg")
+done
+if [[ ${#missing[@]} -gt 0 ]]; then
+	gem install "${missing[@]}"
+fi
+
+echo "Installing spree"
+# See: http://guides.spreecommerce.com/getting_started.html
+rm -rf /var/www/mystore
+mkdir -p /var/www
+cd /var/www
+rails new mystore
+
+cd /var/www/mystore
+
+# This won't work with the proxy...
+unset http_proxy
+spree install -A 
+
+( rails server & )
+
