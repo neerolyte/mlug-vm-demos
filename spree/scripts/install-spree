@@ -7,7 +7,9 @@ echo "Installing spree dependencies (from apt)"
 pkgs=(ruby{,gems} lib{xml2,xslt1,sqlite3}-dev imagemagick git nodejs)
 missing=()
 for pkg in "${pkgs[@]}"; do
-	dpkg -l "$pkg" > /dev/null || missing+=("$pkg")
+	if [[ $(dpkg-query -W -f='${Status}' "$pkg") != 'installed' ]]; then
+	   missing+=("$pkg")
+   fi
 done
 if [[ ${#missing[@]} -gt 0 ]]; then
 	apt-get update
@@ -40,5 +42,5 @@ cd /var/www/mystore
 unset http_proxy
 spree install -A 
 
-( rails server & )
+nohup rails server
 
