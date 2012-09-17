@@ -32,7 +32,7 @@ Vagrant::Config.run do |config|
   # config.vm.forward_port 80, 8080
 
   # Share a folder with the VM - required for puppet to run.
-  config.vm.share_folder "v-data", "/vagrant", "."
+  config.vm.share_folder "v-root", "/vagrant", "."
 
   # Enable provisioning with Puppet stand alone.  Puppet manifests
   # are contained in a directory path relative to this Vagrantfile.
