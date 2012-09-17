@@ -5,6 +5,13 @@ package { apt-cacher-ng:
 }
 
 # Configure it
+file { "/etc/apt-cacher-ng":
+	ensure => directory,
+	force => true,
+	owner => 'root',
+	group => 'root',
+	mode => 0775
+}
 file { "/etc/apt-cacher-ng/acng.conf":
 	ensure => file,
 	force => true,
