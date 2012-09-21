@@ -1,5 +1,9 @@
 #!/bin/bash -ex
 
+if [[ -f /.spree_installed ]]; then
+	echo "Spree already installed, doing nothing."
+fi
+
 echo "Configuring apt to use ACNG proxy"
 echo 'Acquire::http { Proxy "http://192.168.34.10:3142/"; };' > /etc/apt/apt.conf.d/01proxy.conf 
 
@@ -7,7 +11,7 @@ echo "Installing spree dependencies (from apt)"
 pkgs=(ruby{,gems} lib{xml2,xslt1,sqlite3}-dev imagemagick git nodejs)
 missing=()
 for pkg in "${pkgs[@]}"; do
-	if [[ $(dpkg-query -W -f='${Status}' "$pkg") != 'installed' ]]; then
+	if [[ $(dpkg-query -W -f='${Status}' "$pkg") =~ '^(install ok )?installed$' ]]; then
 	   missing+=("$pkg")
    fi
 done
@@ -26,7 +30,7 @@ for pkg in "${pkgs[@]}"; do
 	gem list | grep "^$pkg " -q || missing+=("$pkg")
 done
 if [[ ${#missing[@]} -gt 0 ]]; then
-	gem install "${missing[@]}"
+	gem install --verbose "${missing[@]}"
 fi
 
 echo "Installing spree"
@@ -42,5 +46,12 @@ cd /var/www/mystore
 unset http_proxy
 spree install -A 
 
-nohup rails server
+# Configure for boot
+cp /vagrant/scripts/spree.init /etc/init.d/spree
+update-rc.d spree defaults
 
+# Start in current instance
+/etc/init.d/spree start
+
+# prevent a reprovision clobbering the current install
+touch /.spree_installed
