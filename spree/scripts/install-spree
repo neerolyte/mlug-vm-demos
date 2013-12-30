@@ -4,8 +4,8 @@ if [[ -f /.spree_installed ]]; then
 	echo "Spree already installed, doing nothing."
 fi
 
-echo "Configuring apt to use ACNG proxy"
-echo 'Acquire::http { Proxy "http://192.168.34.10:3142/"; };' > /etc/apt/apt.conf.d/01proxy.conf 
+#echo "Configuring apt to use ACNG proxy"
+#echo 'Acquire::http { Proxy "http://192.168.34.10:3142/"; };' > /etc/apt/apt.conf.d/01proxy.conf 
 
 echo "Installing spree dependencies (from apt)"
 pkgs=(ruby{,gems} lib{xml2,xslt1,sqlite3}-dev imagemagick git nodejs)
